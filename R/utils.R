@@ -134,15 +134,15 @@ updateProgressFactory <- function(analysis, files){
 #}
 
 #p.adjust with qvalues
-#' @importFrom Storeylab qvalue
+#' @importFrom qvalue qvalue
 p.adjust_expanded<-function(pvalues,method){
   if(method=="qvalue"){
     qobject=qvalue(pvalues)
     adjusted_p_vals=qobject$qvalues
-#    adjusted_p_vals=qvalue_truncp(adjusted_p_vals)
+    adjusted_p_vals=qvalue_trunc(adjusted_p_vals)
     adjusted_p_vals
   }else{
-    adjusted_p_vals=p.adjust(data$p.value, method = method)
+    adjusted_p_vals=p.adjust(pvalues$p.value, method = method)
     adjusted_p_vals
   }
 }

@@ -9,6 +9,8 @@ RHRVEasy <-
            typeAnalysis = c('fourier', 'wavelet'),
            significance = 0.05,
            nonLinear = FALSE,
+           doextra=FALSE,
+           #extra_indices=c("acf_features,entropy","lumpiness","flat_spots","crossing_points")
            doRQA = FALSE,   # ignored if nonLinear = FALSE
            nJobs = 1,
            saveHRVIndicesInPath = NULL,
@@ -25,6 +27,7 @@ RHRVEasy <-
       format = format,
       typeAnalysis = typeAnalysis,
       nonLinear = nonLinear,
+      doextra=doextra,
       doRQA = doRQA,
       nJobs = nJobs,
       easyOptions = easyOptions,
@@ -215,12 +218,13 @@ buildEasyOptions <- function(verbose, significance, method) {
   )
 }
 
-
+#' @importFrom tsfeatures tsfeatures
 calculateHRVIndices <- function(
     folders,
     format,
     typeAnalysis,
     nonLinear,
+    doextra,
     doRQA,   # ignored if nonLinear = FALSE
     nJobs,
     easyOptions,
@@ -284,6 +288,28 @@ calculateHRVIndices <- function(
           ...
         )
     }
+
+    if (doextra) {
+      additionalIndex <-  foreach(
+        file = files$file,
+        group=files$group,
+        path = files$folder,
+        .combine = rbind,
+        .errorhandling = "pass"
+      ) %dopar% {
+        suppressWarnings(
+          suppressPackageStartupMessages(
+            library("RHRV", character.only = TRUE, warn.conflicts = FALSE)
+          )
+        )
+        HRV_data <- prepareAnalysis (file, path, format, easyOptions)
+        features<-tsfeatures::tsfeatures(HRV_data$Beat$RR)
+        features$file=file
+        features$group=group
+        features
+        }}
+
+
     if (!is.null(cl)) {
       parallel::stopCluster(cl)
     }
@@ -303,7 +329,17 @@ calculateHRVIndices <- function(
         all = TRUE
       )
     }
+    if(doextra){
+    allResults <- merge(
+      allResults,
+      additionalIndex,
+      by = c("file", "group"),
+      all = TRUE
+    )
     allResults
-  }
+  }}
 
+##otra posibilidad
+
+#unicamente hacer lo que este en el array de extra_indices
 

@@ -143,7 +143,7 @@ level can also be changed using the `significance` parameter (in both
 `RHRVEasy` and `RHRVEasyStats` functions).
 
 ```{r}
-easyAnalysisFDR = RHRVEasyStats(easyAnalysis, correctionMethod =  'scheffe')
+easyAnalysisFDR = RHRVEasyStats(easyAnalysis, correctionMethod =  'qvalue')
 pValues = merge(
   easyAnalysis$stats, 
   easyAnalysisFDR$stats,
